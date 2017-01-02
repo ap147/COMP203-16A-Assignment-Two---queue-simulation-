@@ -1,0 +1,40 @@
+//http://www.homeandlearn.co.uk/java/write_to_textfile.html
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.IOException;
+
+    
+    public class WriteFile{
+        
+    private String path;	//Where txt file is to be created/overridded
+    private boolean append_to_file = true; //Weather to add to bottom of txt file
+    
+    public WriteFile(String file_path){
+        path = file_path;
+    }
+    //Contructor which takes where to make the text file/or find it, and if appending to it   
+    public WriteFile(String file_path, boolean append_value){
+        path = file_path;
+        append_to_file = append_value;
+    }
+        
+    
+    //Method which takes string value to print a text file
+    public void writeToFile(String textLine) throws IOException{
+        FileWriter write = new FileWriter(path, append_to_file);
+        PrintWriter print_line = new PrintWriter(write);
+        
+        print_line.printf(textLine);//Printing value to txt file
+        print_line.close(); //Closing the txt file
+    }
+
+    //Method which takes an int value to print to text file
+    public void writeToFile(int textLine) throws IOException{
+            FileWriter write = new FileWriter(path, append_to_file);
+            PrintWriter print_line = new PrintWriter(write);
+            
+            print_line.print(textLine);//Printing value to txt file
+            print_line.close();//Closing the txt file
+        }
+        
+}

@@ -1,0 +1,23 @@
+
+class MyQSim{
+	public static void main(String args[]){
+	try{
+		if(args.length !=1)    {UseageMessage(); return;}
+		int ClientsNeeded = Integer.parseInt(args[0]);
+		if(ClientsNeeded < 0) {UseageMessage(); return;}
+	}catch(Exception e){UseageMessage(); return;}
+	int ClientsNeeded = Integer.parseInt(args[0]);
+        Simulator s = new Simulator(ClientsNeeded);
+	
+	}
+	public static void UseageMessage(){
+	System.out.println();
+	System.out.println("--------  Usage Message  -------- ");
+	System.out.println("Please Only Enter One Integer value. (Value > 0)");
+	System.out.println();
+	}
+}	
+
+
+
+

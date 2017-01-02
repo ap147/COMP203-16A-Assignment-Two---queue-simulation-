@@ -1,0 +1,21 @@
+class Client{
+    private int arrivaltime;
+    //When a Client leaves the system, the time it spent in there is just the difference between current simulation time and the time it arrived.
+    private int usagetime;
+    
+    private Client next;
+    
+    public Client(int atime,int utime){
+        arrivaltime = atime;
+        usagetime   = utime;
+    }
+    
+    public int getArrivalTime()          {return arrivaltime;}
+    public void setArrivalTime(int atime){arrivaltime = atime;}
+    
+    public int getUsageTime()             {return usagetime;}
+    public void setUsageTime(int utime)   {usagetime = utime;}
+    
+    public Client getNextClient()         {return next;}
+    public void setNextClient(Client n)   {next = n;}
+}

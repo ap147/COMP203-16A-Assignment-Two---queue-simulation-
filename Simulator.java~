@@ -1,0 +1,525 @@
+//1255668
+//Amarjot Parmar
+import java.util.Random;
+import java.io.IOException;
+
+class Simulator {
+    ClientQueue CQueue;
+//Because nothing changes in the system except when an arrival or a departure happens, simulation time moves forward to the time of the next event (either the next arrival or the next departure, whichever comes first)
+    private int SimulationTime;
+    private int NextArrival;
+
+   // Current simulation time + amount of time client at head of queue needs use server.
+   // It is calculated at the moment the current departure is known.
+    private int NextDeparture; 
+	
+    private int TotalClients;
+    private int WaitCounter;
+    private int TimeSpent;          //Stores all clients TimeSpent waiting in Queue
+    private int RemoveCounter =0;   //Stores amount of clients departed
+    Client DClient;     //Methods use variable to store Departing Client
+    
+    
+    /*
+     Constructor, sets amount of clients need to be departed
+     Creates ClientQueue Object to store all the clients
+     And sets of simulation
+     */
+    public Simulator(int amount) throws IOException{
+        TotalClients = amount;         //Amount of Clients Needed
+        
+        CQueue = new ClientQueue();    //Creating Queue
+        Simulation();//Setting of Simulation which terminates when amount of clients have departed system
+        PrintResults(); //Calling method to print out Total Simulation Time, Avg Time spent in queque
+    }
+    
+    
+    /* 
+	DOES WORK 
+        USED METHOD
+     Method loops till number of clients have departed from system
+     calls methods to find out when clients are leaving system and arriving
+     Works out how much time each client spends in the system waitng and stores it.
+     */
+    public void Simulation(){
+        
+        SimulationTime = 0;     //System Time
+        NextArrival    = 0;     //Arriving Time of Next Client
+        NextDeparture  = 0;     //Time when the First Client in the queue departs
+    
+        int DepartedCounter =0; //Counter incremented when Client is departed, used to run loop
+        TimeSpent = 0;          //
+        int TempTimeSpent;      //Variable used to store amount of time spent by current departing Client
+        Client DepratingClient; //Object Variable used to store the departing client
+        
+        boolean NullDeparture = true; //Gets toogled to true when next departure could not be set, when last client is geting departed
+        //loop until certain amount of clients have left system
+        while(DepartedCounter < TotalClients){
+            //IF a Client is arriving
+            if(NextArrival <= SimulationTime){
+                Add2Q();        //Add them to the queue
+                SetNArrival();  //Calculate when the next client will arrive
+                if(NullDeparture){  //IF list of empty before and next departure could not be set
+                    SetNDeparture();//Set it then
+                    NullDeparture = false;  //And toogle switch
+                }
+            }
+            //IF a Client is done using System
+            if(NextDeparture <= SimulationTime){
+                //OR If the queue is empty
+                if(CQueue.isEmpty()){
+                    System.out.println("Queue Is EMPTY!!");
+                }
+                //Otherwise
+                else{
+                    //IF Only 1 client is left in system
+                    if(CQueue.length() == 1){
+                        System.out.println("1 Client Left");
+                        NullDeparture = true;//Set toogle value to true so when next client is added to empty queue, next departure could be worked out aswell
+                        DepratingClient = CQueue.peek();   //Storing the Client that is leaving system
+                        TempTimeSpent = SimulationTime - DepratingClient.getArrivalTime();//Working out the amount of time Client spent waiting
+                        TimeSpent = TimeSpent + TempTimeSpent; //Adding the amount of time this client had to spend waiting in queue
+                        
+                        remove(); //Removing the Client from system
+                     }
+                    else{
+                        //When a Client leaves the system, the time it spent in there is just the difference between current simulation time and the time it arrived.
+                        DepratingClient = CQueue.peek();    //Storing the Client that is leaving system
+                        TempTimeSpent = SimulationTime - DepratingClient.getArrivalTime();  //Working out the amount of time Client spent waiting
+                        TimeSpent = TimeSpent + TempTimeSpent;  //Adding the amount of time this client had to spend waiting in queue
+                        remove();           //Method Departs the first Client in the Queue
+                        SetNDeparture();    //Method Sets when the next client needs to be departed
+                     }
+                    DepartedCounter++;      //Incremeanting Counter
+                }
+             }
+            SimulationTime++;   //Moving Time forward until next event happens
+            
+            
+         }
+        
+        
+     }
+    //Method which increments SImulation time by an random int.
+    //DOESNT WORK 
+    //NOT USED
+    public void Simulation11(){
+        SimulationTime = 0;
+        NextArrival = 0;
+        NextDeparture = 0;
+        
+        Add2Q();
+        SetNArrival();
+        SetNDeparture();
+        
+        SetSimu();
+        
+        
+        int DepartedCounter =0;
+        int FakeCounter = 0;
+        TimeSpent = 0;
+        int TempTimeSpent;
+        int PastSimulationTime = 0;
+        int D; int A;
+        Client DepratingClient;
+        boolean NullDeparture = false;
+        
+        while(DepartedCounter < TotalClients){
+            
+            if(NextArrival <= SimulationTime){//A >= D && A >= 0){
+                Add2Q();
+                SetNArrival();
+                if(NullDeparture){
+                    SetNDeparture();
+                    NullDeparture = false;
+                }
+                PastSimulationTime = SimulationTime;
+                SetSimu();
+                FakeCounter = 1;
+            }
+            
+            
+            if(SimulationTime >= NextDeparture){
+                if(CQueue.isEmpty()){
+                    System.out.println("Queue Is EMPTY!!");
+                    FakeCounter = 1;
+                }
+                else{
+                    if(CQueue.length() == 1){
+                        System.out.println("1 Client Left");
+                        NullDeparture = true;
+                        DepratingClient = CQueue.peek();
+                        TempTimeSpent = DepratingClient.getArrivalTime();
+                        TempTimeSpent = NextDeparture - TempTimeSpent;
+                        TimeSpent = TimeSpent + TempTimeSpent;
+                        
+                        remove();
+                        DepartedCounter++;
+                        PastSimulationTime = SimulationTime;
+                        SetSimu();
+                        NextDeparture = SimulationTime;
+                    }
+                    else{
+                        DepratingClient = CQueue.peek();
+                        TempTimeSpent = DepratingClient.getArrivalTime();
+                        TempTimeSpent = NextDeparture - TempTimeSpent;
+                        TimeSpent = TimeSpent + TempTimeSpent;
+                        
+                        remove();
+                        SetNDeparture();
+                        DepartedCounter++;
+                        PastSimulationTime = SimulationTime;
+                        SetSimu();
+                    }
+                    FakeCounter = 1;
+                }
+            }
+            
+            
+            if(FakeCounter == 0  || CQueue.isEmpty()){
+                System.out.println();
+                if(CQueue.isEmpty()){
+                 System.out.println("Queue is EMPTY");
+                }
+                else{
+                   System.out.println("Simulation Time too Low");
+                }
+            }
+            else{FakeCounter = 0;}
+        }
+
+           }
+    //Method which increments SImulation time by an random int. But if Simulation Value is too low it generates it agian over and over till it works
+    //DOES WORK 
+    //NOT USED
+    public void Simulation2(){
+        SimulationTime = 0;
+        NextArrival = 0;
+        NextDeparture = 0;
+        
+        Add2Q();
+        SetNArrival();
+        SetNDeparture();
+        
+        SetSimu();
+        
+        int DepartedCounter =0;
+        int FakeCounter = 0;
+        TimeSpent = 0;
+        int TempTimeSpent;
+        int PastSimulationTime = 0;
+        Client DepratingClient;
+        boolean NullDeparture = false;
+        
+        while(DepartedCounter < TotalClients){
+            
+            if(NextArrival <= SimulationTime){
+                Add2Q();
+                SetNArrival();
+                if(NullDeparture){
+                    SetNDeparture();
+                    NullDeparture = false;
+                }
+                PastSimulationTime = SimulationTime;
+                SetSimu();
+                FakeCounter = 1;
+            }
+            
+            
+                if(SimulationTime >= NextDeparture){
+                    if(CQueue.isEmpty()){
+                        System.out.println("Queue Is EMPTY!!");
+                        FakeCounter = 1;
+                    }
+                    else{
+                        if(CQueue.length() == 1){
+                            System.out.println("1 Client Left");
+                            NullDeparture = true;
+                            DepratingClient = CQueue.peek();
+                            TempTimeSpent = DepratingClient.getArrivalTime();
+                            TempTimeSpent = NextDeparture - TempTimeSpent;
+                            //TempTimeSpent = SimulationTime - TempTimeSpent;
+                            System.out.println(TempTimeSpent);
+                            TimeSpent = TimeSpent + TempTimeSpent;
+                            
+                            remove();
+                            DepartedCounter++;
+                            PastSimulationTime = SimulationTime;
+                            SetSimu();
+                            NextDeparture = SimulationTime;
+                        }
+                        else{
+                            //When a Client leaves the system, the time it spent in there is just the difference between current simulation time and the time it arrived.
+                            DepratingClient = CQueue.peek();
+                            TempTimeSpent = DepratingClient.getArrivalTime();
+                            TempTimeSpent = NextDeparture - TempTimeSpent;
+                            //TempTimeSpent = SimulationTime - TempTimeSpent;
+                            TimeSpent = TimeSpent + TempTimeSpent;
+                            System.out.println(TempTimeSpent);
+                            remove();
+                            SetNDeparture();
+                            DepartedCounter++;
+                            PastSimulationTime = SimulationTime;
+                            SetSimu();
+                        }
+                        FakeCounter = 1;
+                    }
+                }       
+            if(FakeCounter == 0  || CQueue.isEmpty()){
+                System.out.println("LIFE SAVER");
+                if(CQueue.isEmpty()){
+                    while(SimulationTime < NextArrival){
+                        SimulationTime = PastSimulationTime;
+                        SetSimu();
+                    }
+                }
+                else{
+                    while(SimulationTime < NextArrival && SimulationTime < NextDeparture){
+                        SimulationTime = PastSimulationTime;
+                        SetSimu();
+                    }
+                    
+                }
+                
+            }
+            else{FakeCounter = 0;}
+        }
+        
+        }
+    //Method which increments SImulation time by an random int. But if Simulation Value is too low it generates it agian over and over till it works
+    //Works out which is closer, is it Next Arrival or Departure ( Next Arrival is always checked first )  
+    //NOT USED
+    public void Simulation3(){
+        SimulationTime = 0;
+        NextArrival = 0;
+        NextDeparture = 0;
+    
+        Add2Q();
+        SetNArrival();
+        SetNDeparture();
+        
+        SetSimu();
+        
+
+        int DepartedCounter =0;
+        int FakeCounter = 0;
+        TimeSpent = 0;
+        int TempTimeSpent;
+        int PastSimulationTime = 0;
+        int D; int A;
+        Client DepratingClient;
+        boolean NullDeparture = false;
+
+        while(DepartedCounter < TotalClients){
+    
+            D = SimulationTime - NextDeparture;
+            A = SimulationTime - NextArrival;
+            
+            if(A >= D && A >= 0){
+                Add2Q();
+                SetNArrival();
+                if(NullDeparture){
+                    SetNDeparture();
+                    NullDeparture = false;
+                }
+                PastSimulationTime = SimulationTime;
+                SetSimu();
+                FakeCounter = 1;
+             }
+            
+            else{
+                if(SimulationTime >= NextDeparture){
+                    if(CQueue.isEmpty()){
+                        System.out.println("Queue Is EMPTY!!");
+                        FakeCounter = 1;
+                    }
+                    else{
+                        if(CQueue.length() == 1){
+                            System.out.println("1 Client Left");
+                            NullDeparture = true;
+                            DepratingClient = CQueue.peek();
+                            TempTimeSpent = DepratingClient.getArrivalTime();
+                            TempTimeSpent = NextDeparture - TempTimeSpent;
+                            TimeSpent = TimeSpent + TempTimeSpent;
+                            
+                            remove();
+                            DepartedCounter++;
+                            PastSimulationTime = SimulationTime;
+                            SetSimu();
+                            NextDeparture = SimulationTime;
+                         }
+                        else{
+                            DepratingClient = CQueue.peek();
+                            TempTimeSpent = DepratingClient.getArrivalTime();
+                            TempTimeSpent = NextDeparture - TempTimeSpent;
+                            TimeSpent = TimeSpent + TempTimeSpent;
+                            
+                            remove();
+                            SetNDeparture();
+                            DepartedCounter++;
+                            PastSimulationTime = SimulationTime;
+                            SetSimu();
+                        }
+                            FakeCounter = 1;
+                    }
+                   }
+           
+             }
+
+            if(FakeCounter == 0  || CQueue.isEmpty()){
+                System.out.println("LIFE SAVER");
+                while(SimulationTime < NextArrival && SimulationTime < NextDeparture){
+                    SimulationTime = PastSimulationTime;
+                    SetSimu();
+                }
+
+            }
+            else{FakeCounter = 0;}
+        }
+    }
+    
+   
+    
+    /*
+     Method Adds a Client to end of the queue and prints out details about client that is added
+     Method gets called by Simulation classes when a Cient is arriving
+    */
+    public void Add2Q() {
+        Client newClient;                                    //Variable used to store new client object
+        newClient = new Client(NextArrival,getRandomInt()); // Creating Client Object
+        CQueue.enqueue(newClient);                          // Passing Client Object to method which adds client to back of queue
+        //Printing Details about Client that is added to queue
+        System.out.println("Client ADDED:   A: "+ newClient.getArrivalTime() + " "+ "U: "+ newClient.getUsageTime());
+      }
+    
+    /*
+     Method Removes the first person in the queue, prints out there details and increments the RemoveCounter by one,
+     which is used to make sure requested amount of clients have been departed.
+     Method is called when its time for the first client in the queue to be departed.
+    */
+    public void remove(){
+        Client DepratingClient = CQueue.peek();  //Getting the First Client in Queue
+        CQueue.dequeue();                        //Departing client
+        //Printing Details about the Departing Client
+        System.out.println("Client Removed:   A:" +DepratingClient.getArrivalTime() + " U: "+ DepratingClient.getUsageTime());
+        RemoveCounter++;    //Incrementing RemoveCounter by one.
+      }
+
+
+    /* Method generates a random integer value between 1-3, and returns random int.
+       Used to Increment
+                -  NextArrival of Client
+                -  Simulation Time 
+        Only two methods call this method (SetNArrival & SetSimu)
+      */
+    
+    public static int getRandomInt (){
+        int randomint;                     //Declaring variabe that will store the random int
+        Random rand = new Random();        //Generating random object (uses java.util.Random;)
+        randomint = 1 + rand.nextInt(3);   //Generating random int using random object,making sure its 1-3
+ 
+        return randomint;      //Returning random int
+      }
+
+
+
+    /*
+        Method Increments Current Simulation time by adding a random int (1-3) to it, 
+        prints before and after it gets altered
+    */
+    public void SetSimu(){
+        System.out.println("Sim Before: "+SimulationTime);  //Prinitng Simulation Time before Incremeanting
+        //SimulationTime++;
+        SimulationTime = SimulationTime + getRandomInt();   //Adding Random int to Simulation Time
+        System.out.println("Sim After : "+SimulationTime);  //Prinitng Simulation Time after Incremeanting
+     }
+    
+
+
+    /*
+       Method Used to Increment the NextArrival of Client
+       Prints out what arrival time was before and 
+       after adding a random value to the current simulation time.
+    */
+    public void SetNArrival(){
+        System.out.println("Arr Before: "+ NextArrival);    //Printing Arrival Time before it gets incremented
+        NextArrival = SimulationTime + getRandomInt();      //Setting the NextArrival to random int (1-3) + current time of simulation
+        System.out.println("Arr After: "+ NextArrival);     //Printing the incremented Arrival Time
+     }
+    
+
+
+    /*
+        Method checks if the Client Queue is empty,
+        If so it prints to console that the Queue is Empty
+        Otherwise it takes the first person in the Queue and takes there usage time and 
+        sets the NextDeparture value to there UsageTime + CurrentSimulation Time.
+        Also Prints Departure Time before and after its altered.
+    */
+    public void SetNDeparture(){
+        //Checking if Queue is empty, if not
+        if(!CQueue.isEmpty()){
+            DClient = CQueue.peek();                           //Get the First Person In Queue
+            int x = DClient.getUsageTime();                    //Get there usage time and store it
+            System.out.println("Dep Before: "+NextDeparture);  //Print the Current Departure Time (Before it gets altered)
+            NextDeparture = SimulationTime + x;                //Set NextDeparture time to current SimulationTime + FirstClients UsageTime
+            System.out.println("Dep After: "+NextDeparture);   //Print the Current Departure Time after its altered
+         }
+        //If Queue is empty
+        else{
+            System.out.println("Queue EMPTY !!");   //Print Message
+        }
+     }
+
+
+
+
+
+    /*
+     Method prints out details amount the simulation
+     Amount of Clients removed
+     Weather Simulation was a success or not
+     Avg time spent waiting in the queue and Total run time.
+     Calls a method to print results in textfile
+     */
+    public void PrintResults()throws IOException{
+        System.out.println();
+        if(RemoveCounter == TotalClients){  //Checking if Right amount of clients are removed
+            System.out.println("SUCCESS");  //If so print success message and amount of clients removed
+            System.out.println("Removed :"+ RemoveCounter);
+            
+        }else   //otherwise simulation failed
+        {
+            System.out.println("Failed");   //print failed message
+            System.out.println("Removed :"+ RemoveCounter);
+        }
+        //Working out the avg time spent in queue waiting and printing result and
+        float Avg = (float) TimeSpent / RemoveCounter;
+        System.out.println("Avg :"+ Avg);
+        System.out.println("Sim :"+ SimulationTime);    //Total Simulatoion Time
+        System.out.println();
+        System.out.println();
+        System.out.println(SimulationTime + " " + Avg);
+        dump2txt();     //Calling method to print Simulation time and average in a rext file
+    }
+
+    //  Prints out results in a text file, adds them to the end of text file
+    public void dump2txt()throws IOException{
+        float Avg = (float) TimeSpent / RemoveCounter;
+        String file_name = "README.txt";
+        try{
+            WriteFile data = new WriteFile(file_name, true);//giving object file name and if we want to append
+            data.writeToFile("\n"); //Creating Space for easy readablity
+            data.writeToFile(SimulationTime+" "+ Avg);  //Writeing to list
+            data.writeToFile("\n");
+        }
+        catch(IOException e){ //Incase there is an error
+            System.out.println(e); //Print the error message in cmd line
+        }
+    }
+ 
+}
+
+
+
+

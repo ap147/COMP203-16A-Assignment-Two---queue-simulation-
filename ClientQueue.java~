@@ -1,0 +1,64 @@
+class ClientQueue implements CQInterface{
+
+	private int length;
+    
+    Client First;
+    Client Last;
+    
+    Client PrivatePointer = new Client(0,0);
+    
+    public ClientQueue(){length = 0;}
+ 	 // add a client to the end of the queue
+ 	public void enqueue(Client c){
+        Client PrivatePointer = Last;
+        if(Last == null){
+            First = c;
+            Last  = c;
+        }
+        else{
+            Last.setNextClient(c);
+            Last = c;
+        }
+        length = length + 1;
+    }
+
+  	// remove and return the client at the head of the queue
+ 	public Client dequeue(){
+        PrivatePointer = First;
+        First = PrivatePointer.getNextClient();
+        length = length - 1;
+        return PrivatePointer;
+    }
+
+  	// get a reference to the first item in the queue without removing it
+ 	 public Client peek(){
+         Client FirstClient = First;
+         return FirstClient;
+     }
+
+  	// test if the queue is empty
+ 	public boolean isEmpty(){
+        if(length() == 0) {return true;}
+        return false; 
+    }
+
+  	// return the number of clients in the queue
+ 	public int length(){
+        return length;    
+    }
+    
+    public void dump(){
+        int counter = 1;
+        PrivatePointer = First;
+        while(counter < length() + 1){
+            System.out.println(counter +":  " + "Arrival: " + PrivatePointer.getArrivalTime() +"  Usage: "+ PrivatePointer.getUsageTime());
+            PrivatePointer = PrivatePointer.getNextClient();
+            counter++;
+        }
+        System.out.println();
+ 	System.out.println();
+    }
+}
+
+
+
